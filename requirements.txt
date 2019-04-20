@@ -1,0 +1,8 @@
+flask
+numpy
+nltk
+D:\programming\codePython\myModules\Time_Matters
+git+http://github.com/LIAAD/yake
+pandas
+regex
+langdetect
