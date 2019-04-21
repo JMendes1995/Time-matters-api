@@ -7,7 +7,6 @@ import nltk
 flask_app = Flask(__name__)
 app = Api(app=flask_app)
 
-
 name_space = app.namespace('Time_Matters', description='get relevant dates and his score form a text')
 @name_space.route("/<string:text>")
 class MyResource(Resource):
