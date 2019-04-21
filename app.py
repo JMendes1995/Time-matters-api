@@ -33,9 +33,6 @@ def format_data(dates_list):
     return json_dates
 if __name__ == '__main__':
     flask_app.debug = True
-<<<<<<< HEAD
     port = int(os.environ.get("PORT", 443))
     flask_app.run(host='0.0.0.0', port=port)
-=======
     flask_app.run()
->>>>>>> e926a223e610f4fd4f4abe15ead37ed6bd59b287
