@@ -6,3 +6,4 @@ git+http://github.com/LIAAD/yake
 pandas
 regex
 langdetect
+Flask-RestPlus
