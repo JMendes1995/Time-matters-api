@@ -27,9 +27,11 @@ class MyResource(Resource):
 def format_data(dates_list):
     json_dates = []
     for i in range(len(dates_list)):
-        json_dates.append({'date': dates_list[i][0], 'score': dates_list[i][1]})
+        for k in range(len(dates_list[i])):
+            json_dates.append({'date': dates_list[i], 'score': dates_list[i][1]})
+    print(json_dates)
     return json_dates
-
-
 if __name__ == '__main__':
-    flask_app.run()
+    flask_app.debug = True
+    port = int(os.environ.get("PORT", 443))
+    flask_app.run(host='0.0.0.0', port=port)
