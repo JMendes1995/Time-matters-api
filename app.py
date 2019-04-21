@@ -2,6 +2,7 @@ from time_matters import timeMatters
 from flask import Flask, request
 from flask_restplus import Api, Resource, fields
 import os
+import nltk
 
 flask_app = Flask(__name__)
 app = Api(app=flask_app)
@@ -34,6 +35,7 @@ def format_data(dates_list):
 
 
 if __name__ == '__main__':
+    nltk.download('punkt')
     flask_app.debug = True
     port = int(os.environ.get("PORT", 443))
     flask_app.run(host='0.0.0.0', port=port)
