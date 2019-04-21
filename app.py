@@ -31,6 +31,8 @@ def format_data(dates_list):
             json_dates.append({'date': dates_list[i], 'score': dates_list[i][1]})
     print(json_dates)
     return json_dates
+
+
 if __name__ == '__main__':
     flask_app.debug = True
     port = int(os.environ.get("PORT", 443))
