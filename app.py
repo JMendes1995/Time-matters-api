@@ -7,13 +7,14 @@ flask_app = Flask(__name__)
 app = Api(app=flask_app)
 
 name_space = app.namespace('Time_Matters', description='get relevant dates and his score form a text')
-@name_space.route("/<string:text>")
+@name_space.route("/")
 class MyResource(Resource):
     @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
              params={'text': 'Insert text', 'max_distance': 'max distance between words',
                      'threshold': 'minimum value allow of dice calculation (default 0.05)',
                      'max_array_length': 'max length considered of vector'})
-    def get(self, text):
+    def get(self):
+        text = str(request.args.get('text'))
         max_distance = int(request.args.get('max_distance', 5))
         threshold = float(request.args.get('threshold', 0.05))
         max_array_length = int(request.args.get('max_distance', 0))
