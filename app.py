@@ -1,4 +1,4 @@
-from time_matters import timeMatters, timeMattersPerSentence
+from Time_Matters_SingleDoc import Time_Matters_SingleDoc, Time_Matters_SingleDoc_PerSentence
 from flask import Flask, request
 from flask_restplus import Api, Resource, fields, inputs
 import os
@@ -14,20 +14,29 @@ name_space = app.namespace('Time_Matters', description='get relevant dates and h
 class MyResource(Resource):
     @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
              params={'text': 'Insert Text',
+                     'Language': 'Select on of the following languages under quotes "": English, Portuguese, Spanish, Germany, Dutch, Italian, French.',
                      'contextual_window_distance': 'max distance between words',
                      'Th': 'th is the minimum DICE threshold similarity value that defines the terms that are part of the contexto vector',
                      'N': 'N is the size of the context vector',
-                     'max_keywords': 'define max keywords'})
+                     'max_keywords': 'define max keywords',
+                     'heideltime_document_type': 'Type of the document specified by <file> (options: News, Narrative, Colloquial, Scientific).',
+                     'heideltime_document_creation_time': 'Document creation date in the format (YYYY-MM-DD). Note that this date will only be taken into account when News or Colloquial texts are specified.',
+                     'heideltime_date_granularity': 'Value of granularity. Options: Year, Month, day (e.g., “Year”)'
+                     })
     @app.expect(bool_inputs_text)
     def get(self):
         text = str(request.args.get('text'))
+        lang = str(request.args.get('Language', 'English'))
+        hdt = str(request.args.get('heideltime_document_type', 'News'))
+        hdct = str(request.args.get('heideltime_document_creation_time', ''))
         max_distance = int(request.args.get('contextual_window_distance', 10))
         threshold = float(request.args.get('Th', 0.05))
         max_array_length = int(request.args.get('N', 0))
         max_keywords = int(request.args.get('max_keywords', 10))
+        heideltime_date_granularity = str(request.args.get('heideltime_date_granularity',''))
         data = bool_inputs_text.parse_args()
-
-        json_dates = timeMatters(text, max_distance, threshold, max_array_length, max_keywords, data['analysis_sentence'], data['ignore_contextual_window_distance'])
+        print(lang)
+        json_dates = Time_Matters_SingleDoc(text, lang, max_distance, threshold, max_array_length, max_keywords, data['analysis_sentence'], data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         return json_dates
 
 
@@ -38,20 +47,29 @@ name_space = app.namespace('Time_Matters_per_sentence', description='get relevan
 class MyResource(Resource):
     @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
              params={'text': 'Insert Text',
+                     'Language': 'Select on of the following languages under quotes "": English, Portuguese, Spanish, Germany, Dutch, Italian, French.',
                      'contextual_window_distance': 'max distance between words',
                      'Th': 'th is the minimum DICE threshold similarity value that defines the terms that are part of the contexto vector',
                      'N': 'N is the size of the context vector',
-                     'max_keywords': 'define max keywords'})
+                     'max_keywords': 'define max keywords',
+                     'heideltime_document_type': 'Type of the document specified by <file> (options: News, Narrative, Colloquial, Scientific).',
+                     'heideltime_document_creation_time': 'Document creation date in the format (YYYY-MM-DD). Note that this date will only be taken into account when News or Colloquial texts are specified.',
+                     'heideltime_date_granularity': 'Value of granularity. Options: Year, Month, day (e.g., “Year”)'
+                     })
     @app.expect(bool_inputs_sentence)
     def get(self):
         text = str(request.args.get('text'))
+        lang = str(request.args.get('Language', 'English'))
+        hdt = str(request.args.get('heideltime_document_type', 'News'))
+        hdct = str(request.args.get('heideltime_document_creation_time', ''))
         max_distance = int(request.args.get('contextual_window_distance', 10))
         threshold = float(request.args.get('Th', 0.05))
         max_array_length = int(request.args.get('N', 0))
         max_keywords = int(request.args.get('max_keywords', 10))
+        heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
         data = bool_inputs_sentence.parse_args()
 
-        json_dates = timeMattersPerSentence(text, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'])
+        json_dates = Time_Matters_SingleDoc_PerSentence(text, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         return json_dates
 
 if __name__ == '__main__':
