@@ -6,6 +6,7 @@ import os
 flask_app = Flask(__name__)
 app = Api(app=flask_app)
 
+
 bool_inputs_text = app.parser()
 bool_inputs_text.add_argument('analysis_sentence', type=inputs.boolean, default=True)
 bool_inputs_text.add_argument('ignore_contextual_window_distance', type=inputs.boolean, default=False)
