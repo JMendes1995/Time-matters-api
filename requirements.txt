@@ -3,5 +3,4 @@ numpy
 nltk
 pandas
 regex
-Flask-RestPlus
-gunicorn
+langdetect
