@@ -3,8 +3,5 @@ numpy
 nltk
 pandas
 regex
-git+https://github.com/JMendes1995/py_heideltime.git
-git+https://github.com/LIAAD/yake
-git+https://github.com/JMendes1995/py_heideltime
 Flask-RestPlus
 gunicorn
