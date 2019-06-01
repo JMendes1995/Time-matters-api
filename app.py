@@ -70,7 +70,7 @@ class MyResource(Resource):
         heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
         data = bool_inputs_sentence.parse_args()
 
-        json_dates = Time_Matters_SingleDoc_PerSentence(text, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
+        json_dates, sentences = Time_Matters_SingleDoc_PerSentence(text, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         return json_dates
 
 if __name__ == '__main__':
