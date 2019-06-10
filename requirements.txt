@@ -3,6 +3,7 @@ numpy
 nltk
 git+https://github.com/JMendes1995/Time-Matters.git
 git+http://github.com/LIAAD/yake
+git+https://github.com/JMendes1995/py_heideltime
 pandas
 regex
 langdetect
