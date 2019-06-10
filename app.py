@@ -148,4 +148,6 @@ def remove_files(uploaded_file):
 
 if __name__ == '__main__':
     flask_app.debug = True
+    port = int(os.environ.get("PORT", 443))
+    flask_app.run(host='0.0.0.0', port=port)
     flask_app.run()
