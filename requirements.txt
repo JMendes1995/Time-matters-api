@@ -8,4 +8,5 @@ pandas
 regex
 langdetect
 Flask-RestPlus
+lxml
 gunicorn
