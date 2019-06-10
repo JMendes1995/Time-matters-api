@@ -9,7 +9,7 @@ import os
 from zipfile import ZipFile
 
 
-flask_app = Flask(__name__, instance_path='D:\programming\codePython\Time-matters-api>')
+flask_app = Flask(__name__)
 app = Api(app=flask_app)
 
 
