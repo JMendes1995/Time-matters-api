@@ -145,9 +145,19 @@ def remove_files(uploaded_file):
         os.remove(f)
     os.remove(uploaded_file)
 
+def heroku_set_permitions(heroku=True):
+    import imp
+    import os
+    if heroku:
+        path = imp.find_module('py_heideltime')[1]
+        full_path = path + "/Heideltime/TreeTaggerLinux/bin/*"
+        command = 'chmod 111 ' + full_path
+        result_comand = os.popen(command).read()
+        print(result_comand)
 
 if __name__ == '__main__':
     flask_app.debug = True
+    heroku_set_permitions()
     port = int(os.environ.get("PORT", 443))
     flask_app.run(host='0.0.0.0', port=port)
     flask_app.run()
