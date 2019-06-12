@@ -42,7 +42,8 @@ class MyResource(Resource):
         max_keywords = int(request.args.get('max_keywords', 10))
         heideltime_date_granularity = str(request.args.get('heideltime_date_granularity',''))
         data = bool_inputs_text.parse_args()
-        print(lang)
+
+        heroku_set_permissions()
         json_dates = Time_Matters_SingleDoc(text, lang, max_distance, threshold, max_array_length, max_keywords, data['analysis_sentence'], data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         return json_dates
 
@@ -76,6 +77,7 @@ class MyResource(Resource):
         heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
         data = bool_inputs_sentence.parse_args()
 
+        heroku_set_permissions()
         json_dates, sentences = Time_Matters_SingleDoc_PerSentence(text, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         return json_dates
 
@@ -113,12 +115,13 @@ class MyResource(Resource):
         max_keywords = int(request.args.get('max_keywords', 10))
         heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
         data = bool_inputs_sentence.parse_args()
-
+        heroku_set_permissions()
         # Get file data
         f = request.files['Zip_file']
         f.save(secure_filename(f.filename))
         text_list = get_docs(f.filename)
 
+        heroku_set_permissions()
         # Docs analysis
         json_dates, sentences = Time_Matters_MultipleDoc(text_list, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
         remove_files(f.filename)
@@ -145,7 +148,8 @@ def remove_files(uploaded_file):
         os.remove(f)
     os.remove(uploaded_file)
 
-def heroku_set_permitions(heroku=True):
+
+def heroku_set_permissions(heroku=True):
     import imp
     import os
     if heroku:
@@ -155,9 +159,9 @@ def heroku_set_permitions(heroku=True):
         result_comand = os.popen(command).read()
         print(result_comand)
 
+
 if __name__ == '__main__':
     flask_app.debug = True
-    heroku_set_permitions()
     port = int(os.environ.get("PORT", 443))
     flask_app.run(host='0.0.0.0', port=port)
     flask_app.run()
