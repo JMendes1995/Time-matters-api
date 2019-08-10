@@ -12,7 +12,7 @@ import glob
 
 def main():
     """The main function for this script."""
-    app.run(host='127.0.0.1', port='443', debug=True)
+    app.run(host='0.0.0.0', port='443', debug=True)
     CORS(app)
 
 
@@ -39,8 +39,8 @@ app.config['SWAGGER'] = {
     "version": "0.0.1"
   },
   "schemes": [
-    "http",
-    "https"
+    "https",
+    "http"
   ]
 }
 
