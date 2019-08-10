@@ -3,7 +3,9 @@ numpy
 nltk
 pandas
 regex
-langdetect
-Flask-RestPlus
 lxml
 gunicorn
+setuptools
+flasgger
+gunicorn
+flask_cors

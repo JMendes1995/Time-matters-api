@@ -1,131 +1,217 @@
-from Time_Matters_SingleDoc import Time_Matters_SingleDoc, Time_Matters_SingleDoc_PerSentence
-from flask import Flask, request
-from flask_restplus import Api, Resource, fields, inputs
-from werkzeug.utils import secure_filename
-from werkzeug.datastructures import FileStorage
-from Time_Matters_MultipleDoc import Time_Matters_MultipleDoc
-import glob, codecs
-import os
+from typing import List, Any
+
+from flask import Flask, jsonify, request
+from flasgger import Swagger
+from flasgger.utils import swag_from
+from flask_cors import CORS
+from Time_Matters_MultipleDocs import Time_Matters_MultipleDocs
+from Time_Matters_SingleDoc import Time_Matters_SingleDoc
 from zipfile import ZipFile
+import os
+import glob
+
+def main():
+    """The main function for this script."""
+    app.run(host='127.0.0.1', port='443', debug=True)
+    CORS(app)
 
 
-flask_app = Flask(__name__)
-app = Api(app=flask_app)
+app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
+
+app.config['SWAGGER'] = {
+  "title": "Time-Matters-API",
+  "headers": [
+        ('Access-Control-Allow-Origin', '*'),
+        ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
+        ('Access-Control-Allow-Credentials', "false"),
+  ],
+  "info": {
+    "title": "Time-Matters",
+    "description": "Date extractor that scores the relevance of temporal expressions found within a text (single document) or a set of texts (multiple documents).",
+    "contact": {
+      "responsibleOrganization": "ME",
+      "responsibleDeveloper": "Me",
+      "email": "me@me.com",
+      "url": "www.me.com",
+    },
+    "termsOfService": "http://me.com/terms",
+    "version": "0.0.1"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ]
+}
 
 
-bool_inputs_text = app.parser()
-bool_inputs_text.add_argument('analysis_sentence', type=inputs.boolean, default=True)
-bool_inputs_text.add_argument('ignore_contextual_window_distance', type=inputs.boolean, default=False)
-name_space = app.namespace('Time-Matters-SingleDoc', description='get relevant dates and his score form a text')
-@name_space.route("/")
-class MyResource(Resource):
-    @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
-             params={'text': 'Insert Text',
-                     'Language': 'Select on of the following languages under quotes "": English, Portuguese, Spanish, Germany, Dutch, Italian, French.',
-                     'contextual_window_distance': 'max distance between words',
-                     'Th': 'th is the minimum DICE threshold similarity value that defines the terms that are part of the contexto vector',
-                     'N': 'N is the size of the context vector',
-                     'max_keywords': 'define max keywords',
-                     'heideltime_document_type': 'Type of the document specified by <file> (options: News, Narrative, Colloquial, Scientific).',
-                     'heideltime_document_creation_time': 'Document creation date in the format (YYYY-MM-DD). Note that this date will only be taken into account when News or Colloquial texts are specified.',
-                     'heideltime_date_granularity': 'Value of granularity. Options: Year, Month, day (e.g., “Year”)'
-                     })
-    @app.expect(bool_inputs_text)
-    def get(self):
-        text = str(request.args.get('text'))
-        lang = str(request.args.get('Language', 'English'))
-        hdt = str(request.args.get('heideltime_document_type', 'News'))
-        hdct = str(request.args.get('heideltime_document_creation_time', ''))
-        max_distance = int(request.args.get('contextual_window_distance', 10))
-        threshold = float(request.args.get('Th', 0.05))
-        max_array_length = int(request.args.get('N', 0))
-        max_keywords = int(request.args.get('max_keywords', 10))
-        heideltime_date_granularity = str(request.args.get('heideltime_date_granularity',''))
-        data = bool_inputs_text.parse_args()
+Swagger(app)
+@app.route('/SingleDoc/api/v1.0/BySentence', methods=['GET'])
+@swag_from('single_doc.yml')
+def single_doc_bySentence():
+    text = str(request.args.get('text'))
+    temporal_tagger_name = str(request.args.get('temporal_tagger_name')).lower()
+    date_granularity = str(request.args.get('date_granularity')).lower()
+    language = str(request.args.get('language')).lower()
+    document_type = str(request.args.get('document_type')).lower()
+    document_creation_time = str(request.args.get('document_creation_time')).lower()
+    ngram = request.args.get('ngram')
+    num_of_keywords = request.args.get('num_of_keywords')
+    n_contextual_window = request.args.get('n_contextual_window')
+    N = request.args.get('N')
+    TH = request.args.get('TH')
 
-        heroku_set_permissions()
-        json_dates = Time_Matters_SingleDoc(text, lang, max_distance, threshold, max_array_length, max_keywords, data['analysis_sentence'], data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
-        return json_dates
+    list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
+                          (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
+                          (n_contextual_window, 'full_sentence'), (N, 'max'), (TH, 0.05)]
+
+    date_granularity, language, document_type, document_creation_time, \
+    ngram, num_of_keywords, \
+    n_contextual_window, N, TH = get_default(list_field_default)
 
 
-bool_inputs_sentence = app.parser()
-bool_inputs_sentence.add_argument('ignore_contextual_window_distance', type=inputs.boolean, default=False)
-name_space = app.namespace('Time-Matters-SingleDoc', description='get relevant dates and his score per sentence')
-@name_space.route("/Time_Matters_SingleDoc_PerSentence")
-class MyResource(Resource):
-    @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
-             params={'text': 'Insert Text',
-                     'Language': 'Select on of the following languages under quotes "": English, Portuguese, Spanish, Germany, Dutch, Italian, French.',
-                     'contextual_window_distance': 'max distance between words',
-                     'Th': 'th is the minimum DICE threshold similarity value that defines the terms that are part of the contexto vector',
-                     'N': 'N is the size of the context vector',
-                     'max_keywords': 'define max keywords',
-                     'heideltime_document_type': 'Type of the document specified by <file> (options: News, Narrative, Colloquial, Scientific).',
-                     'heideltime_document_creation_time': 'Document creation date in the format (YYYY-MM-DD). Note that this date will only be taken into account when News or Colloquial texts are specified.',
-                     'heideltime_date_granularity': 'Value of granularity. Options: Year, Month, day (e.g., “Year”)'
-                     })
-    @app.expect(bool_inputs_sentence)
-    def get(self):
-        text = str(request.args.get('text'))
-        lang = str(request.args.get('Language', 'English'))
-        hdt = str(request.args.get('heideltime_document_type', 'News'))
-        hdct = str(request.args.get('heideltime_document_creation_time', ''))
-        max_distance = int(request.args.get('contextual_window_distance', 10))
-        threshold = float(request.args.get('Th', 0.05))
-        max_array_length = int(request.args.get('N', 0))
-        max_keywords = int(request.args.get('max_keywords', 10))
-        heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
-        data = bool_inputs_sentence.parse_args()
-
-        heroku_set_permissions()
-        json_dates, sentences = Time_Matters_SingleDoc_PerSentence(text, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
-        return json_dates
+    if temporal_tagger_name == 'py_heideltime':
+        result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
+    else:
+        result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='BySentence')
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
-# time Matters multi-docs
+@app.route('/SingleDoc/api/v1.0/ByDoc', methods=['GET'])
+@swag_from('single_doc.yml')
+def single_doc_bydoc():
+    text = str(request.args.get('text'))
+    temporal_tagger_name = str(request.args.get('temporal_tagger_name')).lower()
+    date_granularity = str(request.args.get('date_granularity')).lower()
+    language = str(request.args.get('language')).lower()
+    document_type = str(request.args.get('document_type')).lower()
+    document_creation_time = str(request.args.get('document_creation_time')).lower()
+    ngram = request.args.get('ngram')
+    num_of_keywords = request.args.get('num_of_keywords')
+    n_contextual_window = request.args.get('n_contextual_window')
+    N = request.args.get('N')
+    TH = request.args.get('TH')
 
-upload_parser = app.parser()
-upload_parser.add_argument('Zip_file', location='files',
-                           type=FileStorage, required=True)
-bool_inputs_sentence = app.parser()
-bool_inputs_sentence.add_argument('ignore_contextual_window_distance', type=inputs.boolean, default=False)
-name_space = app.namespace('Time-Matters-MultipleDoc', description='get relevant dates and his score from multiple docs'    )
-@name_space.route("/")
-class MyResource(Resource):
-    @app.expect(upload_parser)
-    @app.doc(responses={200: 'OK', 400: 'Invalid Argument', 500: 'Mapping Key Error'},
-             params={'Language': 'Select on of the following languages under quotes "": English, Portuguese, Spanish, Germany, Dutch, Italian, French.',
-                     'contextual_window_distance': 'max distance between words',
-                     'Th': 'th is the minimum DICE threshold similarity value that defines the terms that are part of the contexto vector',
-                     'N': 'N is the size of the context vector',
-                     'max_keywords': 'define max keywords',
-                     'heideltime_document_type': 'Type of the document specified by <file> (options: News, Narrative, Colloquial, Scientific).',
-                     'heideltime_document_creation_time': 'Document creation date in the format (YYYY-MM-DD). Note that this date will only be taken into account when News or Colloquial texts are specified.',
-                     'heideltime_date_granularity': 'Value of granularity. Options: Year, Month, day (e.g., “Year”)'
-                     })
 
-    @app.expect(bool_inputs_sentence)
-    def post(self):
-        lang = str(request.args.get('Language', 'English'))
-        hdt = str(request.args.get('heideltime_document_type', 'News'))
-        hdct = str(request.args.get('heideltime_document_creation_time', ''))
-        max_distance = int(request.args.get('contextual_window_distance', 10))
-        threshold = float(request.args.get('Th', 0.05))
-        max_array_length = int(request.args.get('N', 0))
-        max_keywords = int(request.args.get('max_keywords', 10))
-        heideltime_date_granularity = str(request.args.get('heideltime_date_granularity', ''))
-        data = bool_inputs_sentence.parse_args()
-        heroku_set_permissions()
-        # Get file data
-        f = request.files['Zip_file']
-        f.save(secure_filename(f.filename))
-        text_list = get_docs(f.filename)
+    list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
+                          (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
+                          (n_contextual_window, 'full_sentence'), (N, 'max'), (TH, 0.05)]
 
-        heroku_set_permissions()
-        # Docs analysis
-        json_dates, sentences = Time_Matters_MultipleDoc(text_list, lang, max_distance, threshold, max_array_length, max_keywords, data['ignore_contextual_window_distance'], hdt, hdct, heideltime_date_granularity)
-        remove_files(f.filename)
-        return json_dates
+    date_granularity, language, document_type, document_creation_time, \
+    ngram, num_of_keywords, \
+    n_contextual_window, N, TH = get_default(list_field_default)
+
+    if temporal_tagger_name == 'py_heideltime':
+        result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
+                                        temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
+    else:
+        result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDoc')
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
+
+
+# ============================================================
+# multidoc
+@app.route('/MultipleDocs/api/v1.0/ByCorpus', methods=['POST'])
+@swag_from('ByCorpus_MD.yml')
+def multidoc_bycorpus():
+    iFile = request.files.getlist('zip_file')[0]
+    docs = get_docs(iFile)
+
+    temporal_tagger_name = str(request.args.get('temporal_tagger_name')).lower()
+    date_granularity = str(request.args.get('date_granularity')).lower()
+    language = str(request.args.get('language')).lower()
+    document_type = str(request.args.get('document_type')).lower()
+    document_creation_time = str(request.args.get('document_creation_time')).lower()
+    ngram = request.args.get('ngram')
+    num_of_keywords = request.args.get('num_of_keywords')
+    N = request.args.get('N')
+    TH = request.args.get('TH')
+
+    list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
+                          (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
+                          ('full_document', 'full_document'), (N, 'max'), (TH, 0.05)]
+
+    date_granularity, language, document_type, document_creation_time, \
+    ngram, num_of_keywords, \
+    n_contextual_window, N, TH = get_default(list_field_default)
+
+    if temporal_tagger_name == 'py_heideltime':
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, 'full_document', N, TH],
+                                        temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByCorpus')
+    else:
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, 'full_document', N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByCorpus')
+
+    remove_files()
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
+
+@app.route('/MultipleDocs/api/v1.0/ByDoc', methods=['POST'])
+@swag_from('ByDocSentence_MD.yml')
+def multidoc_byDoc():
+    iFile = request.files.getlist('zip_file')[0]
+    docs = get_docs(iFile)
+
+    temporal_tagger_name = str(request.args.get('temporal_tagger_name')).lower()
+    date_granularity = str(request.args.get('date_granularity')).lower()
+    language = str(request.args.get('language')).lower()
+    document_type = str(request.args.get('document_type')).lower()
+    document_creation_time = str(request.args.get('document_creation_time')).lower()
+    ngram = request.args.get('ngram')
+    num_of_keywords = request.args.get('num_of_keywords')
+    n_contextual_window = request.args.get('n_contextual_window')
+    N = request.args.get('N')
+    TH = request.args.get('TH')
+
+    list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
+                          (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
+                          (n_contextual_window, 'full_sentence'), (N, 'max'), (TH, 0.05)]
+
+    date_granularity, language, document_type, document_creation_time, \
+    ngram, num_of_keywords, \
+    n_contextual_window, N, TH = get_default(list_field_default)
+
+    if temporal_tagger_name == 'py_heideltime':
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
+                                        temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
+    else:
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDoc')
+
+    remove_files()
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
+
+
+@app.route('/MultipleDocs/api/v1.0/ByDocSentence', methods=['POST'])
+@swag_from('ByDocSentence_MD.yml')
+def single_multidoc_byDocSentence():
+    iFile = request.files.getlist('zip_file')[0]
+    docs = get_docs(iFile)
+
+    temporal_tagger_name = str(request.args.get('temporal_tagger_name')).lower()
+    date_granularity = str(request.args.get('date_granularity')).lower()
+    language = str(request.args.get('language')).lower()
+    document_type = str(request.args.get('document_type')).lower()
+    document_creation_time = str(request.args.get('document_creation_time')).lower()
+    ngram = request.args.get('ngram')
+    num_of_keywords = request.args.get('num_of_keywords')
+    n_contextual_window = request.args.get('n_contextual_window')
+    N = request.args.get('N')
+    TH = request.args.get('TH')
+
+    list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
+                          (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
+                          (n_contextual_window, 'full_sentence'), (N, 'max'), (TH, 0.05)]
+
+    date_granularity, language, document_type, document_creation_time, \
+    ngram, num_of_keywords, \
+    n_contextual_window, N, TH = get_default(list_field_default)
+
+    if temporal_tagger_name == 'py_heideltime':
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
+                                        temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDocSentence')
+    else:
+        result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDocSentence')
+
+    remove_files()
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
 def get_docs(uploaded_file):
@@ -136,17 +222,16 @@ def get_docs(uploaded_file):
     docs = []
     files = [f for f in glob.glob('upload_files/'+'*.txt', recursive=True)]
     for file in files:
-        text_file = codecs.open(file, "r", "utf-8")
+        text_file = open(file)
         contents = text_file.read()
         docs.append(contents)
     return docs
 
 
-def remove_files(uploaded_file):
+def remove_files():
     filelist = glob.glob(os.path.join('upload_files', "*.*"))
     for f in filelist:
         os.remove(f)
-    os.remove(uploaded_file)
 
 
 def heroku_set_permissions(heroku=True):
@@ -160,8 +245,45 @@ def heroku_set_permissions(heroku=True):
         print(result_comand)
 
 
-if __name__ == '__main__':
-    flask_app.debug = True
-    port = int(os.environ.get("PORT", 443))
-    flask_app.run(host='0.0.0.0', port=port)
-    flask_app.run()
+def is_int(s):
+    if s != None:
+        try:
+            int(s)
+            return int(s)
+        except ValueError:
+            return s
+    else:
+        s=''
+        return s
+
+def is_float(s):
+    if s != None:
+        try:
+            float(s)
+            return float(s)
+        except ValueError:
+            return s
+    else:
+        return s
+
+
+def get_default(list_field_default):
+    values= []
+    for x in list_field_default:
+        if x[0] == 'none' or x[0] == None:
+            values.append(x[1])
+        else:
+            values.append(x[0])
+    ngram = is_int(values[4])
+    num_of_keywords = is_int(values[5])
+    n_contextual_window = is_int(values[6])
+    TH = is_float(values[8])
+    N = is_int(values[7])
+    return values[0], values[1], values[2], values[3], ngram, num_of_keywords, n_contextual_window, N, TH
+
+
+def str2bool(v):
+    return v in ("True")
+
+if __name__== '__main__':
+  main()

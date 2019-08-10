@@ -1,0 +1,78 @@
+tags:
+  - Time-Matters-MultipleDocs
+consumes:
+  - multipart/form-data
+parameters:
+  - in: formData
+    name: zip_file
+    required: true
+    type: file
+    description: Upload your file.
+
+  - name: temporal_tagger_name
+    in: query
+    type: string
+    enum: ['rule_based', 'py_heideltime']
+    required: true
+    default: rule_based
+    desciption:
+
+  - name: date_granularity
+    in: query
+    type: string
+    enum: ['full', 'year', 'month', 'day']
+    required: false
+    default: full
+    desciption:
+
+  - name: language
+    in: query
+    type: string
+    enum: ['English', 'Portuguese', 'Spanish', 'Germany', 'Dutch', 'Italian', 'French']
+    required: false
+    default: English
+    desciption:
+
+  - name: document_type
+    in: query
+    type: string
+    enum: ['news', 'narrative', 'colloquial', 'scientific']
+    required: false
+    default: news
+    desciption:
+
+  - name: document_creation_time
+    in: query
+    type: string
+    default: yyyy-mm-dd
+    desciption:
+
+  - name: ngram
+    in: query
+    type: integer
+    default: 1
+    description: number of max ngram size
+
+  - name: num_of_keywords
+    in: query
+    type: string
+    default: 10
+    description:  number of YAKE! keywords to extract from the text
+
+  - name: N
+    in: query
+    type: string
+    default: max
+    description: N-size context vector for InfoSimba vectors
+
+  - name: TH
+    in: query
+    type: float
+    default: 0.05
+    description: all the terms with a DICE similarity > TH threshold are eligible to the context vector of InfoSimba
+
+responses:
+  500:
+    description: "Something went wrong"
+  200:
+    description: "Successfully got info"
