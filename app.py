@@ -285,5 +285,7 @@ def get_default(list_field_default):
 def str2bool(v):
     return v in ("True")
 
+
 if __name__== '__main__':
   main()
+  heroku_set_permissions(heroku=True)
