@@ -12,7 +12,7 @@ import glob
 
 def main():
     """The main function for this script."""
-    app.run(host='0.0.0.0', port='443', debug=True)
+    app.run(host='0.0.0.0', debug=True)
     CORS(app)
 
 
