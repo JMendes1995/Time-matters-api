@@ -12,7 +12,7 @@ import glob
 
 def main():
     """The main function for this script."""
-    app.run(host='0.0.0.0',port=443, debug=True)
+    app.run(host='127.0.0.1',port=443, debug=True)
     CORS(app)
 
 
@@ -223,7 +223,7 @@ def get_docs(uploaded_file):
     docs = []
     files = [f for f in glob.glob('upload_files/'+'*.txt', recursive=True)]
     for file in files:
-        text_file= codecs.open(file, "w+", "utf-8")
+        text_file = open(file)
         contents = text_file.read()
         docs.append(contents)
     return docs
@@ -243,8 +243,6 @@ def heroku_set_permissions(heroku=True):
         full_path = path + "/Heideltime/TreeTaggerLinux/bin/*"
         command = 'chmod 111 ' + full_path
         result_comand = os.popen(command).read()
-        print(result_comand)
-
 
 def is_int(s):
     if s != None:
