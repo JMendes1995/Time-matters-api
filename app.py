@@ -215,6 +215,7 @@ def single_multidoc_byDocSentence():
 
 
 def get_docs(uploaded_file):
+    import codecs
     # Create a ZipFile Object and load sample.zip in it
     with ZipFile(uploaded_file, 'r') as zipObj:
         # Extract all the contents of zip file in current directory
@@ -222,7 +223,7 @@ def get_docs(uploaded_file):
     docs = []
     files = [f for f in glob.glob('upload_files/'+'*.txt', recursive=True)]
     for file in files:
-        text_file = open(file)
+        text_file= codecs.open(file, "w+", "utf-8")
         contents = text_file.read()
         docs.append(contents)
     return docs
