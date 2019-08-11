@@ -69,7 +69,7 @@ def single_doc_bySentence():
     ngram, num_of_keywords, \
     n_contextual_window, N, TH = get_default(list_field_default)
 
-
+    heroku_set_permissions()
     if temporal_tagger_name == 'py_heideltime':
         result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
     else:
@@ -100,7 +100,7 @@ def single_doc_bydoc():
     date_granularity, language, document_type, document_creation_time, \
     ngram, num_of_keywords, \
     n_contextual_window, N, TH = get_default(list_field_default)
-
+    heroku_set_permissions()
     if temporal_tagger_name == 'py_heideltime':
         result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
                                         temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
@@ -134,7 +134,7 @@ def multidoc_bycorpus():
     date_granularity, language, document_type, document_creation_time, \
     ngram, num_of_keywords, \
     n_contextual_window, N, TH = get_default(list_field_default)
-
+    heroku_set_permissions()
     if temporal_tagger_name == 'py_heideltime':
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, 'full_document', N, TH],
                                         temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByCorpus')
@@ -168,7 +168,7 @@ def multidoc_byDoc():
     date_granularity, language, document_type, document_creation_time, \
     ngram, num_of_keywords, \
     n_contextual_window, N, TH = get_default(list_field_default)
-
+    heroku_set_permissions()
     if temporal_tagger_name == 'py_heideltime':
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
                                         temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
@@ -203,7 +203,7 @@ def single_multidoc_byDocSentence():
     date_granularity, language, document_type, document_creation_time, \
     ngram, num_of_keywords, \
     n_contextual_window, N, TH = get_default(list_field_default)
-
+    heroku_set_permissions()
     if temporal_tagger_name == 'py_heideltime':
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH],
                                         temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDocSentence')
@@ -288,4 +288,3 @@ def str2bool(v):
 
 if __name__== '__main__':
   main()
-  heroku_set_permissions(heroku=True)
