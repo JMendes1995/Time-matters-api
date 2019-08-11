@@ -223,8 +223,8 @@ def get_docs(uploaded_file):
     docs = []
     files = [f for f in glob.glob('upload_files/'+'*.txt', recursive=True)]
     for file in files:
-        text_file = open(file)
-        contents = text_file.read()
+        with open(file, encoding="utf8", errors='ignore') as text_file:
+            contents = text_file.read()
         docs.append(contents)
     return docs
 
