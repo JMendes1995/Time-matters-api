@@ -12,4 +12,4 @@ flask_cors
 
 git+https://github.com/JMendes1995/Time-Matters.git
 git+https://github.com/LIAAD/yake
-git+https://github.com/LIAAD/yake
+git+https://github.com/JMendes1995/py_heideltime
