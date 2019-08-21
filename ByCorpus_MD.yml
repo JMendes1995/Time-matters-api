@@ -76,3 +76,47 @@ responses:
     description: "Something went wrong"
   200:
     description: "Successfully got info"
+    schema:
+      id: result
+      properties:
+        result:
+          type: array
+          items:
+            schema:
+              id: result
+              properties:
+                Score:
+                  type: object
+                  description: Score of dates
+                  items:
+                    type: string
+                TempExpressions:
+                  type: array
+                  description: Temporal expressions
+                  items:
+                    type: string
+                RelevantKWs:
+                  type: object
+                  description: Relevante Keywords from YAKE!
+                  items:
+                    type: string
+                TextNormalized:
+                  type: array
+                  description: Text Normalized
+                  items:
+                    type: string
+                TextTokens:
+                  type: array
+                  description: Tokens of normalized text
+                  items:
+                    type: string
+                SentencesNormalized:
+                  type: array
+                  description: List of normalized sentences
+                  items:
+                    type: string
+                SentencesTokens:
+                  type: array
+                  description: List of tokens by sentence
+                  items:
+                    type: string
