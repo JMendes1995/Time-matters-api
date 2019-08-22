@@ -1,5 +1,3 @@
-This endpoint returns a task by ID
----
 tags:
   - Time-Matters-SingleDoc
 parameters:

@@ -12,7 +12,7 @@ import glob
 
 def main():
     """The main function for this script."""
-    app.run(host='127.0.0.1',port=443, debug=True)
+    app.run(host='127.0.0.1', port=443, debug=True)
     CORS(app)
 
 
@@ -74,7 +74,7 @@ def single_doc_bySentence():
         result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, language, date_granularity, document_type, document_creation_time], debug_mode=False, score_type='ByDoc')
     else:
         result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='BySentence')
-    return jsonify({'result': [{'Score': [result[0]], 'TempExpressions': result[1], 'RelevantKWs': [result[2]], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]}]})
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
 @app.route('/SingleDoc/api/v1.0/ByDoc', methods=['GET'])
@@ -92,7 +92,6 @@ def single_doc_bydoc():
     N = request.args.get('N')
     TH = request.args.get('TH')
 
-
     list_field_default = [(date_granularity, 'full'), (language, 'English'), (document_type, 'news'),
                           (document_creation_time, 'yyyy-mm-dd'), (ngram, 1), (num_of_keywords, 10),
                           (n_contextual_window, 'full_sentence'), (N, 'max'), (TH, 0.05)]
@@ -108,7 +107,7 @@ def single_doc_bydoc():
     else:
         result = Time_Matters_SingleDoc(text, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDoc')
 
-    return jsonify({'result': [{'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': list(result[2].items()), 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]}]})
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
 # ============================================================
@@ -144,7 +143,8 @@ def multidoc_bycorpus():
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, 'full_document', N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByCorpus')
 
     remove_files()
-    return jsonify({'result':[{'Score': list(result[0]), 'TempExpressions': result[1], 'RelevantKWs': list(result[2]), 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]}]})
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
+
 
 @app.route('/MultipleDocs/api/v1.0/ByDoc', methods=['POST'])
 @swag_from('ByDocSentence_MD.yml')
@@ -178,7 +178,7 @@ def multidoc_byDoc():
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDoc')
 
     remove_files()
-    return jsonify({'result':[{'Score': list(result[0]), 'TempExpressions': result[1], 'RelevantKWs': list(result[2]), 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]}]})
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
 @app.route('/MultipleDocs/api/v1.0/ByDocSentence', methods=['POST'])
@@ -213,11 +213,10 @@ def single_multidoc_byDocSentence():
         result = Time_Matters_MultipleDocs(docs, time_matters=[ngram, num_of_keywords, n_contextual_window, N, TH], temporal_tagger=[temporal_tagger_name, date_granularity], debug_mode=False, score_type='ByDocSentence')
 
     remove_files()
-    return jsonify({'result':[{'Score': list(result[0]), 'TempExpressions': result[1], 'RelevantKWs': list(result[2]), 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]}]})
+    return jsonify({'Score': result[0], 'TempExpressions': result[1], 'RelevantKWs': result[2], 'TextNormalized': result[3], 'TextTokens': result[4], 'SentencesNormalized': result[5], 'SentencesTokens': result[6]})
 
 
 def get_docs(uploaded_file):
-    import codecs
     # Create a ZipFile Object and load sample.zip in it
     with ZipFile(uploaded_file, 'r') as zipObj:
         # Extract all the contents of zip file in current directory
@@ -244,7 +243,8 @@ def heroku_set_permissions(heroku=True):
         path = imp.find_module('py_heideltime')[1]
         full_path = path + "/Heideltime/TreeTaggerLinux/bin/*"
         command = 'chmod 111 ' + full_path
-        result_comand = os.popen(command).read()
+        os.popen(command).read()
+
 
 def is_int(s):
     if s != None:
@@ -256,6 +256,7 @@ def is_int(s):
     else:
         s=''
         return s
+
 
 def is_float(s):
     if s != None:
