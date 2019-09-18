@@ -1,0 +1,111 @@
+This endpoint gets time-matters score on top of multiple documents applying Heideltime temporal tagger and a ByDocSentence score.
+---
+tags:
+  - Time-Matters MultiDocs Heideltime methods
+consumes:
+  - multipart/form-data
+parameters:      
+  - name: text
+    in: formData
+    type: file
+    description: insert a zip file with the set of documents  
+    required: true
+    default:
+  - name: typeOfInput
+    in: query
+    type: string
+    description: gives information about the type of input (only zip files are allowed when running through this GUI). However, 'string' should be passed in case this method is consumed out of this GUI. In that case, text should be a list of documents converted to a JSon string.
+    default: zip
+  - name: ngram
+    in: query
+    type: integer
+    description: max size of ngram
+    default: 1    
+  - name: number_of_keywords
+    in: query
+    type: integer
+    description: number of keywords to return
+    default: 10
+  - name: n_contextual_window
+    in: query
+    type: string
+    default: full_sentence
+    description: Defines the search space where co-occurrences between terms may be counted. Default value is full_sentence (but a n-window where n > 0 can be considered as alternative).
+  - name: N
+    in: query
+    type: integer
+    default: 10
+    description: N-size context vector for InfoSimba vectors. Default value is '10' (but any value > 0 is considered). You can also define 'max' meaning that the context vector should have the maximum number of n-terms co-occurring with X (likewise with Y). This option however will require a huge amount of time (depending on the PC) to execute
+  - name: TH
+    in: query
+    type: float
+    default: 0.05
+    description: minimum threshold value from which terms are eligible to the context vector X and Y at InfoSimba. Default value is 0.05 (but any value > 0 is considered)
+  - name: date_granularity
+    in: query
+    type: string
+    default: full
+    description: full (Highest possible granularity detected will be retrieved); year (YYYY will be retrieved); month (YYYY-MM will be retrieved); day (YYYY-MM-DD will be retrieved).
+  - name: language
+    in: query
+    type: string
+    default: English
+    description: Default is English (other languages are Portuguese, Spanish, Germany, Dutch, Italian, French)
+  - name: document_type
+    in: query
+    type: string
+    default: news
+    description:  default is news (news-style documents); other options are narrative (narrative-style documents (e.g., Wikipedia articles)); colloquial (English colloquial (e.g., Tweets and SMS)); scientific (scientific articles (e.g., clinical trails))
+  - name: document creation time
+    in: query
+    type: string
+    description: in the format yyyy-mm-dd
+responses:
+  500:
+    description: "Something went wrong"
+  200:
+    description: "Successfully got info"
+    schema:
+      id: result
+      properties:
+        result:
+          type: array
+          items:
+            schema:
+              id: result
+              properties:
+                Score:
+                  type: object
+                  description: Score of dates
+                  items:
+                    type: string
+                TempExpressions:
+                  type: array
+                  description: Temporal expressions
+                  items:
+                    type: string
+                RelevantKWs:
+                  type: object
+                  description: Relevante Keywords from YAKE!
+                  items:
+                    type: string
+                TextNormalized:
+                  type: array
+                  description: Text Normalized
+                  items:
+                    type: string
+                TextTokens:
+                  type: array
+                  description: Tokens of normalized text
+                  items:
+                    type: string
+                SentencesNormalized:
+                  type: array
+                  description: List of normalized sentences
+                  items:
+                    type: string
+                SentencesTokens:
+                  type: array
+                  description: List of tokens by sentence
+                  items:
+                    type: string
